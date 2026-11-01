@@ -263,7 +263,7 @@ export function AdminUserList() {
               type="search"
               value={qDraft}
               onChange={(event) => setQDraft(event.target.value)}
-              placeholder="Nombre, correo, usuario o documento"
+              placeholder="Nombre, correo o documento"
               maxLength={100}
             />
             <SelectField
@@ -429,9 +429,6 @@ export function AdminUserList() {
                           {fullName(managedUser)}
                         </span>
                         <span className="cellMuted">{managedUser.email}</span>
-                        <span className="cellMuted">
-                          @{managedUser.username}
-                        </span>
                       </td>
                       <td>{roleLabel(managedUser.role)}</td>
                       <td>

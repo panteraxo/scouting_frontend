@@ -183,6 +183,37 @@ export function positionGroupOf(
   );
 }
 
+/**
+ * Posiciones válidas para una línea de juego. Sin línea se devuelven todas,
+ * de modo que el filtro por posición sigue funcionando de forma independiente.
+ */
+export function positionsForGroup(
+  group: PositionGroup | null | undefined,
+): typeof POSITION_OPTIONS {
+  if (!group) {
+    return POSITION_OPTIONS;
+  }
+
+  return POSITION_OPTIONS.filter((option) => option.group === group);
+}
+
+const recordRatingFormatter = new Intl.NumberFormat("es-PE", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/**
+ * Record devuelto por la API. Un valor ausente o nulo se informa como
+ * "Sin record"; nunca se presenta como cero.
+ */
+export function formatRecordRating(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "Sin record";
+  }
+
+  return `${recordRatingFormatter.format(value)} / 5`;
+}
+
 export function activityTypeLabel(
   type: ActivityType | null | undefined,
 ): string {

@@ -41,10 +41,6 @@ export function DashboardHome() {
               <dd>{user.email}</dd>
             </div>
             <div>
-              <dt>Usuario</dt>
-              <dd>@{user.username}</dd>
-            </div>
-            <div>
               <dt>Rol</dt>
               <dd>{roleLabel(user.role)}</dd>
             </div>

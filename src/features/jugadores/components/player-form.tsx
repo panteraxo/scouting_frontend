@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useState, type FormEvent, type ReactNode } from "react";
+import { ImageUploadField } from "@/components/media/image-upload-field";
 import { Alert } from "@/components/ui/alert";
 import { TextAreaField, TextField, SelectField } from "@/components/ui/form-field";
 import { Spinner } from "@/components/ui/loading";
+import { MEDIA_PURPOSES } from "@/features/media/media-api";
 import { UbigeoFields } from "@/features/organizations/components/ubigeo-fields";
 import { useAuth } from "@/features/auth/auth-provider";
 import { UserIdentityFields } from "@/features/usuarios/components/user-identity-fields";
@@ -211,6 +213,7 @@ export function PlayerForm({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPhotoUploading, setIsPhotoUploading] = useState(false);
 
   const minor = isMinor(state.birthDate);
 
@@ -219,6 +222,15 @@ export function PlayerForm({
     value: PlayerFormState[K],
   ) {
     setState((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => {
+      if (!current[key]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
   }
 
   function updateIdentity(field: keyof IdentityFormValues, value: string) {
@@ -251,6 +263,13 @@ export function PlayerForm({
     event.preventDefault();
 
     if (isSubmitting) {
+      return;
+    }
+
+    if (isPhotoUploading) {
+      setFormError(
+        "Espera a que termine la subida de la foto antes de guardar.",
+      );
       return;
     }
 
@@ -542,14 +561,15 @@ export function PlayerForm({
           Información adicional
         </h2>
 
-        <TextField
-          label="Enlace de la foto"
+        <ImageUploadField
+          label="Foto del jugador"
           name="photoUrl"
-          type="url"
-          value={state.photoUrl}
-          onChange={(event) => update("photoUrl", event.target.value)}
+          value={state.photoUrl || null}
+          purpose={MEDIA_PURPOSES.playerPhoto}
+          onChange={(value) => update("photoUrl", value ?? "")}
+          onUploadingChange={setIsPhotoUploading}
           error={fieldErrors.photoUrl}
-          hint="Opcional. Solo enlaces web; no se suben archivos."
+          hint="Opcional. JPEG, PNG o WebP de hasta 5 MB. La imagen se reduce a 1600 px de ancho y se comprime a JPEG antes de subirla."
           disabled={isSubmitting}
         />
 
@@ -570,10 +590,14 @@ export function PlayerForm({
         <button
           className="button buttonPrimary"
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isPhotoUploading}
         >
           {isSubmitting ? <Spinner /> : null}
-          {isSubmitting ? "Guardando…" : submitLabel}
+          {isSubmitting
+            ? "Guardando…"
+            : isPhotoUploading
+              ? "Subiendo foto…"
+              : submitLabel}
         </button>
         <Link className="button buttonSecondary" href={cancelHref}>
           Cancelar

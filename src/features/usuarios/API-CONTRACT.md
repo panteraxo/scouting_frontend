@@ -34,7 +34,6 @@ centralizado (`X-CSRF-TOKEN`). Ninguna pantalla usa `fetch` directo.
       "id": 1,
       "firstName": "Nombre",
       "lastName": "Apellido",
-      "username": "usuario",
       "email": "usuario@ejemplo.com",
       "role": "PLAYER",
       "status": "ACTIVE",
@@ -71,7 +70,6 @@ El filtro `status` solo usa `ACTIVE` e `INACTIVE`; la API rechaza
   "documentNumber": "12345678",
   "email": "usuario@ejemplo.com",
   "phone": null,
-  "username": "usuario",
   "role": "PLAYER",
   "status": "ACTIVE",
   "mustChangePassword": true,
@@ -113,7 +111,6 @@ informativo con enlace a `Jugadores → Nuevo jugador`.
   "documentNumber": "12345678",
   "email": "usuario@ejemplo.com",
   "phone": null,
-  "username": "usuario",
   "role": "PROFESSOR",
   "academyId": 1
 }
@@ -134,7 +131,7 @@ informativo con enlace a `Jugadores → Nuevo jugador`.
 ## Edición, asignación y estado
 
 - `PUT /admin/users/{id}` se usa solo para identidad: nombres, apellidos, tipo y
-  número de documento, correo, teléfono opcional y nombre de usuario.
+  número de documento, correo y teléfono opcional.
 - `PATCH /admin/users/{id}/assignment` recibe
   `{ role, academyId?, clubId?, position? }`. `position` solo se envía para
   `CLUB_MANAGER`.

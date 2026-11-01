@@ -32,12 +32,14 @@ import {
   formatAge,
   formatExperience,
   formatHeight,
+  formatRecordRating,
   formatResidence,
   formatWeight,
   playerFullName,
   POSITION_GROUP_OPTIONS,
-  POSITION_OPTIONS,
+  positionGroupOf,
   positionLabel,
+  positionsForGroup,
   PROFILE_STATUS_LABELS,
   OPERATIONAL_STATUS_LABELS,
 } from "../catalogs";
@@ -179,9 +181,13 @@ function PlayerCard({
             <dt>Peso</dt>
             <dd>{formatWeight(player.weightKg)}</dd>
           </div>
-          <div className="playerCardMetaWide">
+          <div>
             <dt>Experiencia</dt>
             <dd>{formatExperience(player.yearsExperience)}</dd>
+          </div>
+          <div>
+            <dt>Record</dt>
+            <dd>{formatRecordRating(player.recordRating)}</dd>
           </div>
         </dl>
 
@@ -412,9 +418,15 @@ export function PlayerListScreen() {
     }
 
     setAgeError(undefined);
+
+    const effectivePosition =
+      positionDraft && groupDraft && positionGroupOf(positionDraft) !== groupDraft
+        ? undefined
+        : positionDraft || undefined;
+
     setFilters({
       q: qDraft.trim() || undefined,
-      position: positionDraft || undefined,
+      position: effectivePosition,
       positionGroup: groupDraft || undefined,
       ageMin,
       ageMax,
@@ -461,6 +473,7 @@ export function PlayerListScreen() {
   const hasFilters = Object.values(filters).some(
     (value) => value !== undefined,
   );
+  const positionOptions = positionsForGroup(groupDraft || undefined);
 
   return (
     <div>
@@ -512,15 +525,24 @@ export function PlayerListScreen() {
             />
 
             <SelectField
-              label="Posición"
-              name="position"
-              value={positionDraft}
-              onChange={(event) =>
-                setPositionDraft(event.target.value as "" | PlayerPosition)
-              }
+              label="Línea de juego"
+              name="positionGroup"
+              value={groupDraft}
+              onChange={(event) => {
+                const nextGroup = event.target.value as "" | PositionGroup;
+                setGroupDraft(nextGroup);
+
+                if (
+                  nextGroup &&
+                  positionDraft &&
+                  positionGroupOf(positionDraft) !== nextGroup
+                ) {
+                  setPositionDraft("");
+                }
+              }}
             >
-              <option value="">Todas las posiciones</option>
-              {POSITION_OPTIONS.map((option) => (
+              <option value="">Todas las líneas</option>
+              {POSITION_GROUP_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -528,15 +550,20 @@ export function PlayerListScreen() {
             </SelectField>
 
             <SelectField
-              label="Línea de juego"
-              name="positionGroup"
-              value={groupDraft}
+              label="Posición"
+              name="position"
+              value={positionDraft}
               onChange={(event) =>
-                setGroupDraft(event.target.value as "" | PositionGroup)
+                setPositionDraft(event.target.value as "" | PlayerPosition)
+              }
+              hint={
+                groupDraft
+                  ? "Solo se ofrecen las posiciones de la línea elegida."
+                  : undefined
               }
             >
-              <option value="">Todas las líneas</option>
-              {POSITION_GROUP_OPTIONS.map((option) => (
+              <option value="">Todas las posiciones</option>
+              {positionOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

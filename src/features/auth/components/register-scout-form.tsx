@@ -15,7 +15,6 @@ type FieldErrors = Record<string, string>;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DOCUMENT_PATTERN = /^[A-Za-z0-9-]{4,30}$/;
 const PHONE_PATTERN = /^[0-9+()\-\s]{6,20}$/;
-const USERNAME_PATTERN = /^[A-Za-z0-9._-]{3,30}$/;
 
 export function RegisterScoutForm() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -34,7 +33,6 @@ export function RegisterScoutForm() {
     const documentNumber = String(formData.get("documentNumber") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const phone = String(formData.get("phone") ?? "").trim();
-    const username = String(formData.get("username") ?? "").trim();
     const password = String(formData.get("password") ?? "");
     const confirmPassword = String(formData.get("confirmPassword") ?? "");
     const errors: FieldErrors = {};
@@ -75,13 +73,6 @@ export function RegisterScoutForm() {
         "Usa entre 6 y 20 caracteres: números, espacios, +, ( ) o guiones.";
     }
 
-    if (!username) {
-      errors.username = "Ingresa un nombre de usuario.";
-    } else if (!USERNAME_PATTERN.test(username)) {
-      errors.username =
-        "Usa entre 3 y 30 caracteres: letras, números, punto, guion o guion bajo.";
-    }
-
     if (!password) {
       errors.password = "Ingresa una contraseña.";
     } else if (password.length < 8 || password.length > 72) {
@@ -112,7 +103,6 @@ export function RegisterScoutForm() {
         documentNumber,
         email,
         phone: phone || null,
-        username,
         password,
       });
 
@@ -149,8 +139,8 @@ export function RegisterScoutForm() {
             sesión automáticamente.
           </p>
           <p>
-            Por seguridad, no se indica si el correo, documento o nombre de
-            usuario ya estaban registrados.
+            Por seguridad, no se indica si el correo o el documento ya estaban
+            registrados.
           </p>
         </Alert>
 
@@ -258,16 +248,6 @@ export function RegisterScoutForm() {
             disabled={isSubmitting}
           />
         </div>
-
-        <TextField
-          label="Nombre de usuario"
-          name="username"
-          autoComplete="username"
-          hint="Se usa para identificarte en la plataforma."
-          error={fieldErrors.username}
-          disabled={isSubmitting}
-          required
-        />
 
         <div className="formGrid">
           <TextField

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
+import { VideoUploadField } from "@/components/media/video-upload-field";
 import { Alert } from "@/components/ui/alert";
 import {
   SelectField,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/form-field";
 import { InlineLoading, Spinner, StatePanel } from "@/components/ui/loading";
 import { useAuth } from "@/features/auth/auth-provider";
+import { MEDIA_PURPOSES } from "@/features/media/media-api";
 import { ApiError, isAbortError } from "@/lib/api-client";
 import type {
   ProspectEvaluation,
@@ -92,6 +94,7 @@ export function ProspectEvaluationFormScreen() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVideoUploading, setIsVideoUploading] = useState(false);
   const [created, setCreated] = useState<ProspectEvaluation | null>(null);
 
   useEffect(() => {
@@ -180,6 +183,15 @@ export function ProspectEvaluationFormScreen() {
     value: EvaluationFormState[K],
   ) {
     setForm((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => {
+      if (!current[key]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
   }
 
   function validate(): FieldErrors {
@@ -253,6 +265,13 @@ export function ProspectEvaluationFormScreen() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSubmitting) {
+      return;
+    }
+
+    if (isVideoUploading) {
+      setFormError(
+        "Espera a que termine la subida del video antes de registrar la evaluación.",
+      );
       return;
     }
 
@@ -498,15 +517,15 @@ export function ProspectEvaluationFormScreen() {
               hint="Solo tú puedes ver estas notas. No se comparten con Admin, academia, club ni jugador."
               disabled={isSubmitting}
             />
-            <TextField
-              label="Enlace de video (opcional)"
+            <VideoUploadField
+              label="Video de la evaluación (opcional)"
               name="videoUrl"
-              type="url"
-              value={form.videoUrl}
-              onChange={(event) => update("videoUrl", event.target.value)}
+              value={form.videoUrl || null}
+              purpose={MEDIA_PURPOSES.prospectEvaluationVideo}
+              onChange={(value) => update("videoUrl", value ?? "")}
+              onUploadingChange={setIsVideoUploading}
               error={fieldErrors.videoUrl}
-              placeholder="https://..."
-              hint="Solo enlaces web; no se cargan archivos."
+              hint="MP4 o WebM de hasta 200 MB. El video es privado: solo tú puedes reproducirlo. No se transcribe ni se convierte el formato."
               disabled={isSubmitting}
             />
 
@@ -514,10 +533,14 @@ export function ProspectEvaluationFormScreen() {
               <button
                 className="button buttonPrimary"
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isVideoUploading}
               >
                 {isSubmitting ? <Spinner /> : null}
-                {isSubmitting ? "Registrando…" : "Registrar evaluación"}
+                {isSubmitting
+                  ? "Registrando…"
+                  : isVideoUploading
+                    ? "Subiendo video…"
+                    : "Registrar evaluación"}
               </button>
               <Link
                 className="button buttonSecondary"

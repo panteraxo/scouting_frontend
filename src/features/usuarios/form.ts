@@ -12,7 +12,6 @@ export interface IdentityFormValues {
   documentNumber: string;
   email: string;
   phone: string;
-  username: string;
 }
 
 export type FormErrors = Record<string, string>;
@@ -20,7 +19,6 @@ export type FormErrors = Record<string, string>;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const DOCUMENT_PATTERN = /^[A-Za-z0-9-]{4,30}$/;
 const PHONE_PATTERN = /^[0-9+()\-\s]{6,20}$/;
-const USERNAME_PATTERN = /^[A-Za-z0-9._-]{3,30}$/;
 
 export const EMPTY_IDENTITY: IdentityFormValues = {
   firstName: "",
@@ -29,7 +27,6 @@ export const EMPTY_IDENTITY: IdentityFormValues = {
   documentNumber: "",
   email: "",
   phone: "",
-  username: "",
 };
 
 export function identityFromUser(user: ManagedUser): IdentityFormValues {
@@ -40,7 +37,6 @@ export function identityFromUser(user: ManagedUser): IdentityFormValues {
     documentNumber: user.documentNumber ?? "",
     email: user.email ?? "",
     phone: user.phone ?? "",
-    username: user.username ?? "",
   };
 }
 
@@ -55,7 +51,6 @@ export function validateIdentity(values: IdentityFormValues): FormErrors {
   const documentNumber = values.documentNumber.trim();
   const email = values.email.trim();
   const phone = values.phone.trim();
-  const username = values.username.trim();
 
   if (!firstName) {
     errors.firstName = "Ingresa los nombres.";
@@ -93,13 +88,6 @@ export function validateIdentity(values: IdentityFormValues): FormErrors {
       "Usa entre 6 y 20 caracteres: números, espacios, +, ( ) o guiones.";
   }
 
-  if (!username) {
-    errors.username = "Ingresa un nombre de usuario.";
-  } else if (!USERNAME_PATTERN.test(username)) {
-    errors.username =
-      "Usa entre 3 y 30 caracteres: letras, números, punto, guion o guion bajo.";
-  }
-
   return errors;
 }
 
@@ -113,7 +101,6 @@ export function identityPayload(values: IdentityFormValues): UserIdentityInput {
     documentNumber: values.documentNumber.trim(),
     email: values.email.trim(),
     phone: phone || null,
-    username: values.username.trim(),
   };
 }
 

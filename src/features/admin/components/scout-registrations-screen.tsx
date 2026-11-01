@@ -410,9 +410,6 @@ export function ScoutRegistrationsScreen() {
                         <span className="cellStrong">
                           {fullName(registration)}
                         </span>
-                        <span className="cellMuted">
-                          @{registration.username}
-                        </span>
                       </td>
                       <td>
                         <span>{registration.documentNumber}</span>
@@ -523,7 +520,6 @@ export function ScoutRegistrationsScreen() {
             <div className="modalPerson">
               <strong>{fullName(pendingAction.registration)}</strong>
               <span>{pendingAction.registration.email}</span>
-              <span>@{pendingAction.registration.username}</span>
             </div>
 
             {actionError ? (

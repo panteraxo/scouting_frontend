@@ -14,7 +14,6 @@ export interface RegisterScoutInput {
   email: string;
   /** Opcional: se envía `null` cuando el ojeador no informa teléfono. */
   phone: string | null;
-  username: string;
   password: string;
 }
 

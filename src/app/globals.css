@@ -506,6 +506,16 @@ a:focus-visible {
   line-height: 1.45;
 }
 
+.formErrorList {
+  display: grid;
+  gap: 3px;
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 .input,
 .select {
   width: 100%;
@@ -552,6 +562,93 @@ a:focus-visible {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 4px;
+}
+
+/* Carga de medios (imágenes y video) */
+
+.mediaField {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  background: #fbfdff;
+}
+
+.mediaPreview {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #eef5fd;
+}
+
+.mediaPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mediaPreviewVideo {
+  max-width: 520px;
+  aspect-ratio: 16 / 9;
+  background: var(--navy);
+}
+
+.mediaPreview video {
+  width: 100%;
+  height: 100%;
+  background: var(--navy);
+}
+
+.mediaEmpty {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.mediaActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mediaStatus {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.mediaStatus a {
+  color: var(--blue);
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.mediaProgressGroup {
+  display: grid;
+  gap: 6px;
+}
+
+.mediaProgress {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e3ecf7;
+}
+
+.mediaProgress > span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  border-radius: 999px;
+  background: var(--blue);
+  transition: width 0.2s ease;
 }
 
 /* Dashboard */

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent, type ReactNode } from "react";
+import { VideoUploadField } from "@/components/media/video-upload-field";
 import { Alert } from "@/components/ui/alert";
 import {
   SelectField,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/form-field";
 import { Spinner } from "@/components/ui/loading";
 import { useAuth } from "@/features/auth/auth-provider";
+import { MEDIA_PURPOSES } from "@/features/media/media-api";
 import { ApiError } from "@/lib/api-client";
 import type {
   ActivityType,
@@ -257,6 +259,7 @@ export function PlayerHistoryForm({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVideoUploading, setIsVideoUploading] = useState(false);
 
   const matchLike = isMatchActivity(
     state.activityType ? (state.activityType as ActivityType) : null,
@@ -272,6 +275,15 @@ export function PlayerHistoryForm({
     value: HistoryFormState[K],
   ) {
     setState((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => {
+      if (!current[key]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
   }
 
   function changeActivityType(value: string) {
@@ -521,12 +533,12 @@ export function PlayerHistoryForm({
       }
       if (!state.videoUrl.trim()) {
         errors.videoTimestampSeconds =
-          "El segundo del video requiere un enlace de video.";
+          "El segundo del video requiere un video cargado.";
       }
     }
     if (state.videoDescription.trim() && !state.videoUrl.trim()) {
       errors.videoDescription =
-        "La descripción requiere un enlace de video.";
+        "La descripción requiere un video cargado.";
     }
     if (state.videoDescription.trim().length > 500) {
       errors.videoDescription =
@@ -709,6 +721,13 @@ export function PlayerHistoryForm({
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isSubmitting) {
+      return;
+    }
+
+    if (isVideoUploading) {
+      setFormError(
+        "Espera a que termine la subida del video antes de guardar.",
+      );
       return;
     }
 
@@ -1130,14 +1149,15 @@ export function PlayerHistoryForm({
         <h2 className="formSectionTitle" id="history-video">
           Video y observaciones
         </h2>
-        <TextField
-          label="Enlace del video"
+        <VideoUploadField
+          label="Video"
           name="videoUrl"
-          type="url"
-          value={state.videoUrl}
-          onChange={(event) => update("videoUrl", event.target.value)}
+          value={state.videoUrl || null}
+          purpose={MEDIA_PURPOSES.playerHistoryVideo}
+          onChange={(value) => update("videoUrl", value ?? "")}
+          onUploadingChange={setIsVideoUploading}
           error={fieldErrors.videoUrl}
-          hint="Opcional. Solo enlaces web."
+          hint="Opcional. MP4 o WebM de hasta 200 MB. Se sube directo al almacenamiento privado; no se transcribe ni se convierte el formato."
           disabled={isSubmitting}
         />
         <div className="formGrid">
@@ -1286,10 +1306,14 @@ export function PlayerHistoryForm({
         <button
           className="button buttonPrimary"
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isVideoUploading}
         >
           {isSubmitting ? <Spinner /> : null}
-          {isSubmitting ? "Guardando…" : submitLabel}
+          {isSubmitting
+            ? "Guardando…"
+            : isVideoUploading
+              ? "Subiendo video…"
+              : submitLabel}
         </button>
         <Link className="button buttonSecondary" href={cancelHref}>
           Cancelar

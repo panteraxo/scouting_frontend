@@ -492,9 +492,7 @@ export function AdminUserDetail() {
           <div>
             <p className="detailCode">{managedUser.email}</p>
             <h2 className="detailTitle">{fullName(managedUser)}</h2>
-            <p className="detailMeta">
-              {roleLabel(managedUser.role)} · @{managedUser.username}
-            </p>
+            <p className="detailMeta">{roleLabel(managedUser.role)}</p>
             <div className="badgeRow">
               <span className={manageBadgeClass(managedUser.status)}>
                 {statusLabel(managedUser.status)}
@@ -544,10 +542,6 @@ export function AdminUserDetail() {
         <section className="card" aria-labelledby="user-account-title">
           <h2 id="user-account-title">Cuenta</h2>
           <dl className="metaList">
-            <div>
-              <dt>Usuario</dt>
-              <dd>@{managedUser.username}</dd>
-            </div>
             <div>
               <dt>Rol</dt>
               <dd>{roleLabel(managedUser.role)}</dd>

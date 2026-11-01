@@ -39,11 +39,26 @@ tarjetas del listado pueden mostrarlos sin inventar valores. Si el perfil no
 registra alguno, la API omite el campo y la tarjeta muestra "—". La ficha del
 jugador sigue siendo la vía para el detalle físico completo.
 
+## SCP-020 — filtros dependientes y record
+
+- Filtro de interfaz: `positionGroup` restringe las opciones de `position` a las
+  posiciones de esa línea (`POSITION_OPTIONS.group`). Si la línea cambia y la
+  posición elegida deja de pertenecer, la posición se limpia; al limpiar la
+  línea vuelven todas las posiciones y la posición elegida se conserva. Sin línea
+  el filtro por posición sigue disponible por sí solo.
+- El cliente nunca envía una posición incongruente con la línea: `handleApply`
+  descarta la posición si no pertenece al grupo aplicado. La autorización y la
+  validación de filtros siguen siendo responsabilidad del backend.
+- `PlayerDirectoryItem.recordRating?: number | null` es el record calculado por
+  el backend. La tarjeta lo muestra como "Record" con formato es-PE y un
+  decimal; si el campo falta o es `null` muestra "Sin record". No se ordena,
+  recalcula ni completa en el cliente, y no se interpreta como cero.
+
 ## Formularios
 
 - El alta envía en un solo request la identidad de la cuenta
-  (`firstName`, `lastName`, `documentType`, `documentNumber`, `email`, `phone`,
-  `username`) y los datos del perfil. El rol PLAYER lo fija el servidor.
+  (`firstName`, `lastName`, `documentType`, `documentNumber`, `email`, `phone`)
+  y los datos del perfil. El rol PLAYER lo fija el servidor.
 - Solo ADMIN envía `academyId`; para Director/Profesor la academia se deriva de
   la sesión y no se envía el campo.
 - La contraseña temporal se muestra una sola vez con `TemporaryPasswordPanel` y

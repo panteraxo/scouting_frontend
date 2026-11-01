@@ -6,10 +6,12 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { ImageUploadField } from "@/components/media/image-upload-field";
 import { Alert } from "@/components/ui/alert";
 import { TextAreaField, TextField, SelectField } from "@/components/ui/form-field";
 import { Spinner } from "@/components/ui/loading";
 import { useAuth } from "@/features/auth/auth-provider";
+import { MEDIA_PURPOSES } from "@/features/media/media-api";
 import { ApiError } from "@/lib/api-client";
 import type {
   OrganizationInput,
@@ -122,7 +124,7 @@ function validate(state: FormState, kind: OrganizationKind): FieldErrors {
   }
 
   if (!state.logoUrl.trim()) {
-    errors.logoUrl = "Ingresa el enlace del logo.";
+    errors.logoUrl = "Sube el logo de la organización.";
   }
 
   if (!type) {
@@ -184,7 +186,6 @@ function validate(state: FormState, kind: OrganizationKind): FieldErrors {
   }
 
   const urls: Array<[keyof FormState, string]> = [
-    ["logoUrl", "el logo"],
     ["websiteUrl", "el sitio web"],
     ["instagramUrl", "Instagram"],
     ["facebookUrl", "Facebook"],
@@ -294,15 +295,32 @@ export function OrganizationForm({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLogoUploading, setIsLogoUploading] = useState(false);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setState((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => {
+      if (!current[key]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (isSubmitting) {
+      return;
+    }
+
+    if (isLogoUploading) {
+      setFormError(
+        "Espera a que termine la subida del logo antes de guardar.",
+      );
       return;
     }
 
@@ -367,6 +385,13 @@ export function OrganizationForm({
       {formError ? (
         <Alert variant="error" title="No se pudo guardar">
           <p>{formError}</p>
+          {Object.keys(fieldErrors).length > 0 ? (
+            <ul className="formErrorList">
+              {Object.entries(fieldErrors).map(([field, message]) => (
+                <li key={field}>{message}</li>
+              ))}
+            </ul>
+          ) : null}
         </Alert>
       ) : null}
 
@@ -465,17 +490,16 @@ export function OrganizationForm({
             required
           />
 
-          <TextField
-            label="Enlace del logo"
+          <ImageUploadField
+            label="Logo"
             name="logoUrl"
-            type="url"
-            value={state.logoUrl}
-            onChange={(event) => update("logoUrl", event.target.value)}
+            value={state.logoUrl || null}
+            purpose={MEDIA_PURPOSES.organizationLogo}
+            onChange={(value) => update("logoUrl", value ?? "")}
+            onUploadingChange={setIsLogoUploading}
             error={fieldErrors.logoUrl}
-            placeholder="https://ejemplo.com/logo.png"
-            hint="Enlace web obligatorio. No se suben archivos."
+            hint="Obligatorio. JPEG, PNG o WebP de hasta 5 MB. Se reduce a 1600 px de ancho."
             disabled={isSubmitting}
-            required
           />
         </div>
 
@@ -703,10 +727,14 @@ export function OrganizationForm({
         <button
           className="button buttonPrimary"
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isLogoUploading}
         >
           {isSubmitting ? <Spinner /> : null}
-          {isSubmitting ? "Guardando…" : submitLabel}
+          {isSubmitting
+            ? "Guardando…"
+            : isLogoUploading
+              ? "Subiendo logo…"
+              : submitLabel}
         </button>
         <Link className="button buttonSecondary" href={cancelHref}>
           Cancelar

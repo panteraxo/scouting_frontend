@@ -30,7 +30,6 @@ export interface UserResponse {
   email: string;
   firstName: string;
   lastName: string;
-  username: string;
   role: UserRole;
   status: UserStatus;
   mustChangePassword: boolean;
@@ -52,7 +51,6 @@ export interface ScoutRegistration {
   documentNumber: string;
   email: string;
   phone: string | null;
-  username: string;
   status: UserStatus;
   createdAt: string;
 }
@@ -249,7 +247,6 @@ export interface ManagedUserSummary {
   id: number;
   firstName: string;
   lastName: string;
-  username: string;
   email: string;
   role: UserRole;
   status: UserStatus;
@@ -297,7 +294,6 @@ export interface UserIdentityInput {
   documentNumber: string;
   email: string;
   phone: string | null;
-  username: string;
 }
 
 /**
@@ -428,6 +424,11 @@ export interface PlayerDirectoryItem {
   lastName: string;
   age: number | null;
   yearsExperience: number | null;
+  /**
+   * Record deportivo calculado por el backend. Se muestra solo como dato
+   * recibido: si falta o es `null`, la interfaz no inventa un valor.
+   */
+  recordRating?: number | null;
   photoUrl: string | null;
   /** Incluidos por `GET /players`; se omiten si el perfil no los registra. */
   heightCm?: number | null;

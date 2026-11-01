@@ -103,19 +103,6 @@ export function UserIdentityFields({
           maxLength={30}
         />
       </div>
-
-      <TextField
-        label="Nombre de usuario"
-        name="username"
-        autoComplete="username"
-        hint="Entre 3 y 30 caracteres: letras, números, punto, guion o guion bajo."
-        value={values.username}
-        onChange={(event) => onChange("username", event.target.value)}
-        error={errors.username}
-        disabled={disabled}
-        maxLength={30}
-        required
-      />
     </>
   );
 }
