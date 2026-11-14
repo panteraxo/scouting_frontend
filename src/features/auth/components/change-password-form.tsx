@@ -17,7 +17,15 @@ interface PasswordFieldErrors {
 }
 
 export function ChangePasswordForm() {
-  const { status, user, changePassword, logout, markSessionExpired } = useAuth();
+  const {
+    status,
+    user,
+    sessionError,
+    changePassword,
+    logout,
+    markSessionExpired,
+    retrySession,
+  } = useAuth();
   const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<PasswordFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -31,8 +39,40 @@ export function ChangePasswordForm() {
     }
   }, [status, router]);
 
-  if (status === "loading") {
+  if (status === "idle" || status === "loading") {
     return <LoadingScreen message="Verificando sesión…" />;
+  }
+
+  if (status === "error") {
+    return (
+      <AuthLayout
+        eyebrow="Seguridad de la cuenta"
+        title="No pudimos verificar tu sesión"
+        subtitle="La verificación no se completó. Puedes intentarlo nuevamente."
+      >
+        <Alert variant="warning" title="Sesión no disponible">
+          <p>
+            {sessionError ??
+              "No pudimos verificar tu sesión. Revisa tu conexión e inténtalo de nuevo."}
+          </p>
+          <button
+            className="button buttonSmall buttonSecondary"
+            type="button"
+            onClick={retrySession}
+          >
+            Reintentar
+          </button>
+          <button
+            className="button buttonSmall buttonGhost"
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? "Cerrando sesión…" : "Cerrar sesión"}
+          </button>
+        </Alert>
+      </AuthLayout>
+    );
   }
 
   if (status === "unauthenticated" || !user) {

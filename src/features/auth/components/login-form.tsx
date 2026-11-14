@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Alert } from "@/components/ui/alert";
 import { TextField } from "@/components/ui/form-field";
-import { LoadingScreen, Spinner } from "@/components/ui/loading";
+import { Spinner } from "@/components/ui/loading";
 import { ApiError } from "@/lib/api-client";
 import { useAuth } from "../auth-provider";
 import { AuthLayout } from "./auth-layout";
@@ -30,7 +30,7 @@ function loginErrorMessage(error: unknown): string {
 }
 
 export function LoginForm() {
-  const { login, status, user, sessionError } = useAuth();
+  const { login, status, user, sessionError, retrySession } = useAuth();
   const router = useRouter();
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -44,13 +44,11 @@ export function LoginForm() {
     }
   }, [status, user, router]);
 
-  if (status === "loading") {
-    return <LoadingScreen message="Verificando sesión…" />;
-  }
-
-  if (status === "authenticated") {
-    return <LoadingScreen message="Redirigiendo al dashboard…" />;
-  }
+  const sessionWarning =
+    status === "error"
+      ? (sessionError ??
+        "No pudimos verificar tu sesión. Revisa tu conexión e inténtalo de nuevo.")
+      : sessionError;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -104,9 +102,16 @@ export function LoginForm() {
         </span>
       }
     >
-      {sessionError ? (
+      {sessionWarning ? (
         <Alert variant="warning" title="Sesión no disponible">
-          <p>{sessionError}</p>
+          <p>{sessionWarning}</p>
+          <button
+            className="button buttonSmall buttonSecondary"
+            type="button"
+            onClick={retrySession}
+          >
+            Reintentar
+          </button>
         </Alert>
       ) : null}
 
@@ -116,7 +121,7 @@ export function LoginForm() {
         </Alert>
       ) : null}
 
-      <form className="form" onSubmit={handleSubmit} noValidate>
+      <form className="form" method="post" onSubmit={handleSubmit} noValidate>
         <TextField
           label="Correo electrónico"
           name="email"

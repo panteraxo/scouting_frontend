@@ -181,7 +181,7 @@ export function RegisterScoutForm() {
         </Alert>
       ) : null}
 
-      <form className="form" onSubmit={handleSubmit} noValidate>
+      <form className="form" method="post" onSubmit={handleSubmit} noValidate>
         <div className="formGrid">
           <TextField
             label="Nombres"
