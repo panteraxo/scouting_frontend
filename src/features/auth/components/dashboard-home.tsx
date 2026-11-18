@@ -1,8 +1,193 @@
 "use client";
 
 import Link from "next/link";
+import type { UserRole } from "@/types/api";
 import { useAuth } from "../auth-provider";
-import { fullName, roleLabel, statusLabel } from "../user-labels";
+import { HomeKpis } from "./home-kpis";
+
+interface ModuleLink {
+  href: string;
+  title: string;
+  description: string;
+}
+
+interface ModuleGroup {
+  title: string;
+  links: ModuleLink[];
+}
+
+const ROLE_INTROS: Record<UserRole, string> = {
+  ADMIN:
+    "Revisa solicitudes, verifica organizaciones y mantén las cuentas al día.",
+  SCOUT:
+    "Consulta jugadores, registra tus evaluaciones y comparte candidatos con clubes.",
+  PROFESSOR:
+    "Gestiona los jugadores de tu academia y mantén sus perfiles al día.",
+  ACADEMY_DIRECTOR:
+    "Administra tu academia, su plantel y las cuentas de tu equipo.",
+  CLUB_MANAGER: "Revisa las recomendaciones que llegan a tu club y responde.",
+  PLAYER: "Consulta tu perfil deportivo y tu historial.",
+};
+
+const MODULE_GROUPS: Record<UserRole, ModuleGroup[]> = {
+  ADMIN: [
+    {
+      title: "Cuentas y organizaciones",
+      links: [
+        {
+          href: "/admin/usuarios",
+          title: "Usuarios",
+          description: "Crea cuentas y define quién puede entrar.",
+        },
+        {
+          href: "/admin/academias",
+          title: "Academias",
+          description: "Consulta, crea y verifica academias.",
+        },
+        {
+          href: "/admin/clubes",
+          title: "Clubes",
+          description: "Consulta, crea y verifica clubes.",
+        },
+        {
+          href: "/admin/solicitudes-ojeador",
+          title: "Solicitudes de ojeador",
+          description: "Aprueba o rechaza los pedidos de registro.",
+        },
+      ],
+    },
+    {
+      title: "Seguimiento",
+      links: [
+        {
+          href: "/jugadores",
+          title: "Jugadores",
+          description: "Perfiles de todas las academias y su historial.",
+        },
+        {
+          href: "/jugadores/nuevo",
+          title: "Nuevo jugador",
+          description: "Crea la cuenta y el perfil deportivo de un jugador.",
+        },
+        {
+          href: "/admin/recomendaciones",
+          title: "Recomendaciones",
+          description: "Consulta el estado de cada recomendación enviada.",
+        },
+      ],
+    },
+  ],
+  SCOUT: [
+    {
+      title: "Tu trabajo",
+      links: [
+        {
+          href: "/prospecciones",
+          title: "Prospección",
+          description: "Tus seguimientos, notas y evaluaciones privadas.",
+        },
+        {
+          href: "/jugadores",
+          title: "Jugadores",
+          description: "Explora perfiles activos de academias operativas.",
+        },
+      ],
+    },
+    {
+      title: "Directorio",
+      links: [
+        {
+          href: "/academias",
+          title: "Academias",
+          description: "Academias activas y verificadas.",
+        },
+        {
+          href: "/clubes",
+          title: "Clubes",
+          description: "Clubes activos y verificados.",
+        },
+      ],
+    },
+  ],
+  PROFESSOR: [
+    {
+      title: "Tu academia",
+      links: [
+        {
+          href: "/mi-academia",
+          title: "Mi academia",
+          description: "Datos de la academia asignada a tu cuenta.",
+        },
+        {
+          href: "/jugadores",
+          title: "Jugadores",
+          description: "Perfiles de tu academia, con historial y tutor.",
+        },
+        {
+          href: "/jugadores/nuevo",
+          title: "Nuevo jugador",
+          description: "Crea la cuenta y el perfil deportivo de un jugador.",
+        },
+      ],
+    },
+  ],
+  ACADEMY_DIRECTOR: [
+    {
+      title: "Tu academia",
+      links: [
+        {
+          href: "/mi-academia",
+          title: "Mi academia",
+          description: "Actualiza los datos de la academia asignada.",
+        },
+        {
+          href: "/jugadores",
+          title: "Jugadores",
+          description: "Perfiles de tu academia, con historial y tutor.",
+        },
+        {
+          href: "/usuarios/nuevo",
+          title: "Crear usuario",
+          description: "Abre una cuenta de profesor para tu academia.",
+        },
+        {
+          href: "/jugadores/nuevo",
+          title: "Nuevo jugador",
+          description: "Crea la cuenta y el perfil deportivo de un jugador.",
+        },
+      ],
+    },
+  ],
+  CLUB_MANAGER: [
+    {
+      title: "Tu club",
+      links: [
+        {
+          href: "/mi-club",
+          title: "Mi club",
+          description: "Actualiza los datos del club asignado.",
+        },
+        {
+          href: "/mi-club/recomendaciones",
+          title: "Recomendaciones del club",
+          description: "Responde las recomendaciones que llegan a tu club.",
+        },
+      ],
+    },
+  ],
+  PLAYER: [
+    {
+      title: "Tu perfil",
+      links: [
+        {
+          href: "/mi-perfil",
+          title: "Mi perfil",
+          description: "Tu perfil deportivo, estadísticas y trayectoria.",
+        },
+      ],
+    },
+  ],
+};
 
 export function DashboardHome() {
   const { user } = useAuth();
@@ -11,335 +196,40 @@ export function DashboardHome() {
     return null;
   }
 
-  const isAdmin = user.role === "ADMIN";
-  const isAcademyRole =
-    user.role === "PROFESSOR" || user.role === "ACADEMY_DIRECTOR";
+  const groups = MODULE_GROUPS[user.role];
 
   return (
-    <div>
+    <div className="dashboardHome">
       <header className="pageHeader">
         <div>
-          <p className="eyebrow">SCOUTING.PE</p>
           <h1>Hola, {user.firstName}</h1>
-          <p>
-            Este es el punto de partida del dashboard. Tu rol y tus permisos se
-            verifican automáticamente en cada consulta.
-          </p>
+          <p>{ROLE_INTROS[user.role]}</p>
         </div>
       </header>
 
-      <div className="cardGrid">
-        <section className="card" aria-labelledby="account-title">
-          <h2 id="account-title">Tu cuenta</h2>
-          <dl className="metaList">
-            <div>
-              <dt>Nombre</dt>
-              <dd>{fullName(user)}</dd>
-            </div>
-            <div>
-              <dt>Correo</dt>
-              <dd>{user.email}</dd>
-            </div>
-            <div>
-              <dt>Rol</dt>
-              <dd>{roleLabel(user.role)}</dd>
-            </div>
-            <div>
-              <dt>Estado</dt>
-              <dd>
-                <span className="statusBadge statusActive">
-                  {statusLabel(user.status)}
-                </span>
-              </dd>
-            </div>
-          </dl>
-        </section>
+      <HomeKpis />
 
-        {isAdmin ? (
-          <>
-            <section className="card" aria-labelledby="admin-academies-title">
-              <h2 id="admin-academies-title">Academias</h2>
-              <p>
-                Crea y administra academias, revisa su estado operativo y su
-                verificación.
-              </p>
-              <Link
-                className="button buttonPrimary cardAction"
-                href="/admin/academias"
-              >
-                Gestionar academias
-              </Link>
-            </section>
+      <section className="moduleGroups" aria-labelledby="modules-title">
+        <h2 className="sectionTitle" id="modules-title">
+          Módulos
+        </h2>
 
-            <section className="card" aria-labelledby="admin-clubs-title">
-              <h2 id="admin-clubs-title">Clubes</h2>
-              <p>
-                Crea y administra clubes. La verificación y la reactivación son
-                exclusivas del Administrador.
-              </p>
-              <Link
-                className="button buttonPrimary cardAction"
-                href="/admin/clubes"
-              >
-                Gestionar clubes
-              </Link>
-            </section>
-
-            <section className="card" aria-labelledby="admin-title">
-              <h2 id="admin-title">Usuarios</h2>
-              <p>
-                Crea cuentas de administración, academia, club u ojeador, asigna
-                una academia o club cuando corresponda y administra el estado de
-                acceso. Las cuentas de jugador se crean desde Jugadores.
-              </p>
-              <Link
-                className="button buttonPrimary cardAction"
-                href="/admin/usuarios"
-              >
-                Gestionar usuarios
-              </Link>
-            </section>
-
-            <section className="card" aria-labelledby="admin-players-title">
-              <h2 id="admin-players-title">Jugadores</h2>
-              <p>
-                Consulta perfiles de todas las academias, crea cuentas de jugador
-                con su perfil deportivo y administra su estado e historial.
-              </p>
-              <div className="rowActions cardAction">
-                <Link
-                  className="button buttonPrimary buttonSmall"
-                  href="/jugadores"
-                >
-                  Ver jugadores
-                </Link>
-                <Link
-                  className="button buttonSecondary buttonSmall"
-                  href="/jugadores/nuevo"
-                >
-                  Nuevo jugador
-                </Link>
-              </div>
-            </section>
-
-            <section className="card" aria-labelledby="admin-scouts-title">
-              <h2 id="admin-scouts-title">Revisión de ojeadores</h2>
-              <p>
-                Consulta las solicitudes de registro público y apruébalas o
-                recházalas. Solo las cuentas aprobadas pueden iniciar sesión.
-              </p>
-              <Link
-                className="button buttonSecondary cardAction"
-                href="/admin/solicitudes-ojeador"
-              >
-                Revisar solicitudes
-              </Link>
-            </section>
-
-            <section className="card" aria-labelledby="admin-recommendations-title">
-              <h2 id="admin-recommendations-title">Recomendaciones</h2>
-              <p>
-                Consulta únicamente datos generales de auditoría: estado,
-                jugador, ojeador, club y fechas. Sin carta, resumen compartido
-                ni notas privadas.
-              </p>
-              <Link
-                className="button buttonSecondary cardAction"
-                href="/admin/recomendaciones"
-              >
-                Ver auditoría
-              </Link>
-            </section>
-          </>
-        ) : null}
-
-        {isAcademyRole ? (
-          <>
-            <section className="card" aria-labelledby="academy-title">
-              <h2 id="academy-title">Mi academia</h2>
-              <p>
-                {user.role === "ACADEMY_DIRECTOR"
-                  ? "Consulta, actualiza o inhabilita la academia asignada a tu cuenta. La creación y la verificación corresponden al Administrador."
-                  : "Consulta la academia asignada a tu cuenta. Tu rol tiene acceso de solo lectura."}
-              </p>
-              <Link
-                className="button buttonPrimary cardAction"
-                href="/mi-academia"
-              >
-                Ver mi academia
-              </Link>
-            </section>
-
-            {user.role === "ACADEMY_DIRECTOR" ? (
-              <section className="card" aria-labelledby="create-users-title">
-                <h2 id="create-users-title">Crear usuarios</h2>
-                <p>
-                  Crea cuentas de Profesor dentro de tu academia. La contraseña
-                  temporal se muestra una sola vez.
-                </p>
-                <Link
-                  className="button buttonSecondary cardAction"
-                  href="/usuarios/nuevo"
-                >
-                  Crear usuario
-                </Link>
-              </section>
-            ) : (
-              <section className="card" aria-labelledby="create-player-title">
-                <h2 id="create-player-title">Nuevo jugador</h2>
-                <p>
-                  Registra a un jugador de tu academia: se crean su cuenta y su
-                  perfil deportivo en una sola operación. La contraseña temporal
-                  se muestra una sola vez.
-                </p>
-                <Link
-                  className="button buttonSecondary cardAction"
-                  href="/jugadores/nuevo"
-                >
-                  Nuevo jugador
-                </Link>
-              </section>
-            )}
-
-            <section className="card" aria-labelledby="academy-players-title">
-              <h2 id="academy-players-title">Jugadores</h2>
-              <p>
-                Consulta los perfiles de tu academia, registra nuevos jugadores y
-                administra su historial y tutor cuando corresponda.
-              </p>
-              <div className="rowActions cardAction">
-                <Link
-                  className="button buttonPrimary buttonSmall"
-                  href="/jugadores"
-                >
-                  Ver jugadores
-                </Link>
-                <Link
-                  className="button buttonSecondary buttonSmall"
-                  href="/jugadores/nuevo"
-                >
-                  Nuevo jugador
-                </Link>
-              </div>
-            </section>
-          </>
-        ) : null}
-
-        {user.role === "CLUB_MANAGER" ? (
-          <section className="card" aria-labelledby="club-title">
-            <h2 id="club-title">Mi club</h2>
-            <p>
-              Consulta, actualiza o inhabilita el club asignado a tu cuenta. La
-              creación, verificación y reactivación corresponden al
-              Administrador.
-            </p>
-            <div className="rowActions cardAction">
-              <Link className="button buttonPrimary buttonSmall" href="/mi-club">
-                Ver mi club
-              </Link>
-              <Link
-                className="button buttonSecondary buttonSmall"
-                href="/mi-club/recomendaciones"
-              >
-                Recomendaciones
-              </Link>
-            </div>
-          </section>
-        ) : null}
-
-        {user.role === "SCOUT" ? (
-          <>
-            <section className="card" aria-labelledby="scout-players-title">
-              <h2 id="scout-players-title">Jugadores</h2>
-              <p>
-                Consulta perfiles activos y completos de academias operativas.
-                La ficha indica el estado de verificación de la academia.
-              </p>
-              <Link
-                className="button buttonPrimary cardAction"
-                href="/jugadores"
-              >
-                Explorar jugadores
-              </Link>
-            </section>
-
-            <section className="card" aria-labelledby="scout-prospects-title">
-              <h2 id="scout-prospects-title">Prospecciones</h2>
-              <p>
-                Consulta tus seguimientos privados, notas y evaluaciones. Solo tú
-                puedes acceder a este contenido.
-              </p>
-              <Link
-                className="button buttonPrimary cardAction"
-                href="/prospecciones"
-              >
-                Ver prospecciones
-              </Link>
-            </section>
-
-            <section className="card" aria-labelledby="scout-academies-title">
-              <h2 id="scout-academies-title">Academias</h2>
-              <p>
-                Consulta academias activas y verificadas. La información es
-                institucional y de solo lectura.
-              </p>
-              <Link
-                className="button buttonPrimary cardAction"
-                href="/academias"
-              >
-                Explorar academias
-              </Link>
-            </section>
-
-            <section className="card" aria-labelledby="scout-clubs-title">
-              <h2 id="scout-clubs-title">Clubes</h2>
-              <p>
-                Consulta clubes activos y verificados. No se muestran datos
-                personales de representantes.
-              </p>
-              <Link
-                className="button buttonPrimary cardAction"
-                href="/clubes"
-              >
-                Explorar clubes
-              </Link>
-            </section>
-          </>
-        ) : null}
-
-        {user.role === "PLAYER" ? (
-          <section className="card" aria-labelledby="player-title">
-            <h2 id="player-title">Mi perfil deportivo</h2>
-            <p>
-              Consulta tu perfil, estadísticas y trayectoria en modo de solo
-              lectura. No puedes editar tu perfil ni acceder a datos del tutor.
-            </p>
-            <Link className="button buttonPrimary cardAction" href="/mi-perfil">
-              Ver mi perfil
-            </Link>
-          </section>
-        ) : null}
-
-        <section className="card" aria-labelledby="security-title">
-          <h2 id="security-title">Seguridad</h2>
-          <p>
-            Puedes actualizar tu contraseña en cualquier momento. Tu sesión está
-            protegida y no se guardan credenciales en el navegador.
-          </p>
-          <Link
-            className="button buttonSecondary cardAction"
-            href="/cambiar-password"
-          >
-            Cambiar contraseña
-          </Link>
-        </section>
-      </div>
-
-      <p className="footnote">
-        Los módulos y acciones visibles dependen de tu rol; tus permisos se
-        verifican automáticamente en cada operación. La interfaz no muestra datos
-        simulados.
-      </p>
+        {groups.map((group) => (
+          <div className="moduleGroup" key={group.title}>
+            <h3 className="moduleGroupTitle">{group.title}</h3>
+            <ul className="moduleList">
+              {group.links.map((link) => (
+                <li className="moduleItem" key={link.href}>
+                  <Link href={link.href}>
+                    <span className="moduleItemTitle">{link.title}</span>
+                    <p>{link.description}</p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }

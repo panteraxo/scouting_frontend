@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Spinner } from "@/components/ui/loading";
 import type { UserRole } from "@/types/api";
 import { useAuth } from "../auth-provider";
 import { fullName, initials, roleLabel } from "../user-labels";
+import { AccountDialog } from "./account-dialog";
 
 interface NavItem {
   href: string;
@@ -87,7 +88,31 @@ export function DashboardShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
+  const [openMenuPath, setOpenMenuPath] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
+
+  const closeAccount = useCallback(() => setIsAccountOpen(false), []);
+
+  // El menú móvil queda abierto solo para la ruta en la que se abrió:
+  // al cambiar de ruta se cierra sin necesidad de un efecto.
+  const isMenuOpen = openMenuPath === pathname;
+
+  // Escape cierra el menú móvil abierto.
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpenMenuPath(null);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isMenuOpen]);
 
   if (!user) {
     return null;
@@ -124,49 +149,77 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       </a>
 
       <aside className="sidebar">
-        <Link className="brand" href="/inicio">
-          <span className="brandMark">SP</span>
-          <span>Scouting.pe</span>
-        </Link>
+        <div className="sidebarTop">
+          <Link className="brand" href="/inicio">
+            <span className="brandMark">SP</span>
+            <span>Scouting.pe</span>
+          </Link>
 
-        <nav className="sidebarNav" aria-label="Módulos del dashboard">
-          <p className="navSectionLabel">Panel</p>
-          {visibleItems.map((item) => {
-            const href = resolveNavHref(item, user.role);
-            const isActive = activeItem === item;
-
-            return (
-              <Link
-                key={href}
-                className={`navLink${isActive ? " navLinkActive" : ""}`}
-                href={href}
-                aria-current={isActive ? "page" : undefined}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="sidebarFooter">
-          <div className="userSummary">
-            <span className="avatar" aria-hidden="true">
-              {initials(user)}
-            </span>
-            <span className="userSummaryText">
-              <span className="userSummaryName">{fullName(user)}</span>
-              <span className="userSummaryMeta">{roleLabel(user.role)}</span>
-            </span>
-          </div>
           <button
-            className="button buttonSmall logoutButton"
+            className="menuToggle"
             type="button"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
+            aria-expanded={isMenuOpen}
+            aria-controls="sidebar-body"
+            onClick={() => setOpenMenuPath(isMenuOpen ? null : pathname)}
           >
-            {isLoggingOut ? <Spinner /> : null}
-            {isLoggingOut ? "Cerrando sesión…" : "Cerrar sesión"}
+            {isMenuOpen ? "Cerrar módulos" : "Módulos"}
           </button>
+        </div>
+
+        <div
+          className="sidebarBody"
+          id="sidebar-body"
+          data-open={isMenuOpen ? "true" : "false"}
+        >
+          <nav className="sidebarNav" aria-label="Módulos del dashboard">
+            {visibleItems.map((item) => {
+              const href = resolveNavHref(item, user.role);
+              const isActive = activeItem === item;
+
+              return (
+                <Link
+                  key={href}
+                  className={`navLink${isActive ? " navLinkActive" : ""}`}
+                  href={href}
+                  aria-current={isActive ? "page" : undefined}
+                  onClick={() => setOpenMenuPath(null)}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="sidebarFooter">
+            <button
+              className="userSummary"
+              type="button"
+              onClick={() => {
+                setOpenMenuPath(null);
+                setIsAccountOpen(true);
+              }}
+              aria-haspopup="dialog"
+              aria-expanded={isAccountOpen}
+              title="Ver los datos de mi cuenta"
+            >
+              <span className="avatar" aria-hidden="true">
+                {initials(user)}
+              </span>
+              <span className="userSummaryText">
+                <span className="userSummaryName">{fullName(user)}</span>
+                <span className="userSummaryMeta">{roleLabel(user.role)}</span>
+              </span>
+            </button>
+            <button
+              className="button buttonSmall logoutButton"
+              type="button"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? <Spinner /> : null}
+              {isLoggingOut ? "Cerrando sesión…" : "Cerrar sesión"}
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -185,6 +238,8 @@ export function DashboardShell({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+
+      {isAccountOpen ? <AccountDialog onClose={closeAccount} /> : null}
     </div>
   );
 }

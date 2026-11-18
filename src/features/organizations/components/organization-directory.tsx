@@ -241,7 +241,8 @@ export function OrganizationDirectory({
 
     setFilters({
       q: qDraft.trim() || undefined,
-      type: typeDraft.trim() || undefined,
+      // El filtro por tipo no está disponible en el directorio de clubes.
+      type: isAcademy ? typeDraft.trim() || undefined : undefined,
       ubigeo: ubigeo || undefined,
     });
     setPage(0);
@@ -303,13 +304,15 @@ export function OrganizationDirectory({
               onChange={(event) => setQDraft(event.target.value)}
               placeholder="Nombre o código"
             />
-            <TextField
-              label="Tipo"
-              name="type"
-              value={typeDraft}
-              onChange={(event) => setTypeDraft(event.target.value)}
-              placeholder="Texto libre"
-            />
+            {isAcademy ? (
+              <TextField
+                label="Tipo"
+                name="type"
+                value={typeDraft}
+                onChange={(event) => setTypeDraft(event.target.value)}
+                placeholder="Texto libre"
+              />
+            ) : null}
             <SelectField
               label="Departamento"
               name="ubigeoDepartment"
@@ -437,7 +440,7 @@ export function OrganizationDirectory({
           >
             <p>
               {hasFilters
-                ? "Prueba con otro texto, tipo o ubicación. Solo aparecen organizaciones activas y verificadas."
+                ? `Prueba con otro texto${isAcademy ? ", tipo" : ""} u otra ubicación. Solo aparecen organizaciones activas y verificadas.`
                 : `Aún no hay ${plural} ${activeLabel} para consultar.`}
             </p>
           </StatePanel>

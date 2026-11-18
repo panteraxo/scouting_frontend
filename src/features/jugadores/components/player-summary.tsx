@@ -25,6 +25,7 @@ import {
   PROFILE_STATUS_LABELS,
 } from "../catalogs";
 import { playerGuardianPath } from "../routes";
+import { PlayerPositionPitch } from "./player-position-pitch";
 
 function playerStatusBadge(status: PlayerOperationalStatus): string {
   return status === "ACTIVE"
@@ -62,6 +63,8 @@ export function PlayerSummary({
   const staffResponse = "guardianDataStatus" in player ? player : null;
   const scoutResponse = "guardianDataAvailable" in player ? player : null;
   const academy = player.academy;
+  // Posición del perfil; si aún no está registrada se usa la mejor posición.
+  const pitchPosition = player.position ?? player.bestPosition ?? null;
 
   return (
     <div className="playerSummary">
@@ -76,6 +79,28 @@ export function PlayerSummary({
           </p>
         </Alert>
       ) : null}
+
+      <section
+        className="card playerPitchCard"
+        aria-labelledby="player-pitch-title"
+      >
+        <div className="playerPitchText">
+          <h2 className="cardTitle" id="player-pitch-title">
+            Posición en la cancha
+          </h2>
+          <p className="playerPitchPosition">
+            {pitchPosition
+              ? positionLabel(pitchPosition)
+              : "Sin posición registrada"}
+          </p>
+          <p className="playerPitchGroup">
+            {player.positionGroup
+              ? `Línea de juego: ${positionGroupLabel(player.positionGroup)}`
+              : "Línea de juego no registrada"}
+          </p>
+        </div>
+        <PlayerPositionPitch position={pitchPosition} />
+      </section>
 
       <div className="playerSummaryGrid">
         <section

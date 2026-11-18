@@ -149,10 +149,7 @@ export function PlayerUbigeoFilter({
           })
         }
         disabled={disabled}
-        hint={
-          loadError ??
-          "Filtra por el distrito de residencia del jugador, no por el de la academia."
-        }
+        error={loadError ?? undefined}
       >
         <option value="">Todos los departamentos</option>
         {departments.map((department) => (
@@ -200,7 +197,6 @@ export function PlayerUbigeoFilter({
             })
           }
           disabled={disabled || !value.provinceCode}
-          hint="El ojeador no dispone de filtro por distrito."
         >
           <option value="">
             {value.provinceCode

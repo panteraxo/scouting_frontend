@@ -420,9 +420,13 @@ export function PlayerListScreen() {
     setAgeError(undefined);
 
     const effectivePosition =
-      positionDraft && groupDraft && positionGroupOf(positionDraft) !== groupDraft
-        ? undefined
-        : positionDraft || undefined;
+      groupDraft === "GOALKEEPER"
+        ? "GOALKEEPER"
+        : positionDraft &&
+            groupDraft &&
+            positionGroupOf(positionDraft) !== groupDraft
+          ? undefined
+          : positionDraft || undefined;
 
     setFilters({
       q: qDraft.trim() || undefined,
@@ -474,6 +478,8 @@ export function PlayerListScreen() {
     (value) => value !== undefined,
   );
   const positionOptions = positionsForGroup(groupDraft || undefined);
+  // Arquero es la única posición de su línea: al elegirla queda fijada.
+  const goalkeeperOnly = groupDraft === "GOALKEEPER";
 
   return (
     <div>
@@ -552,17 +558,15 @@ export function PlayerListScreen() {
             <SelectField
               label="Posición"
               name="position"
-              value={positionDraft}
+              value={goalkeeperOnly ? "GOALKEEPER" : positionDraft}
               onChange={(event) =>
                 setPositionDraft(event.target.value as "" | PlayerPosition)
               }
-              hint={
-                groupDraft
-                  ? "Solo se ofrecen las posiciones de la línea elegida."
-                  : undefined
-              }
+              disabled={goalkeeperOnly}
             >
-              <option value="">Todas las posiciones</option>
+              {goalkeeperOnly ? null : (
+                <option value="">Todas las posiciones</option>
+              )}
               {positionOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -612,12 +616,7 @@ export function PlayerListScreen() {
                 name="academyId"
                 value={academyDraft}
                 onChange={(event) => setAcademyDraft(event.target.value)}
-                hint={
-                  academiesError ??
-                  (role === "SCOUT"
-                    ? "Solo academias activas y verificadas."
-                    : undefined)
-                }
+                error={academiesError ?? undefined}
               >
                 <option value="">Todas las academias</option>
                 {academies.map((academy) => (
