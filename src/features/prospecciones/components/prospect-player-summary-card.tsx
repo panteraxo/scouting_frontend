@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useState } from "react";
 import { safeHttpUrl } from "@/features/organizations/labels";
 import type { ProspectPlayerSummary } from "@/types/api";
 import {
@@ -38,9 +39,12 @@ export function ProspectPlayerSummaryCard({
 }: {
   player: ProspectPlayerSummary;
 }) {
-  const logoUrl = safeHttpUrl(player.academy?.logoUrl);
+  const [imageFailed, setImageFailed] = useState(false);
+  const fullName = prospectPlayerName(player);
+  const photoUrl = safeHttpUrl(player.photoUrl);
+  const showPhoto = Boolean(photoUrl) && !imageFailed;
   const initials =
-    prospectPlayerName(player)
+    fullName
       .split(/\s+/)
       .map((part) => part.charAt(0))
       .slice(0, 2)
@@ -50,11 +54,12 @@ export function ProspectPlayerSummaryCard({
   return (
     <section className="card" aria-labelledby="prospect-player-summary">
       <div className="detailIdentity">
-        {logoUrl ? (
+        {showPhoto && photoUrl ? (
           <img
             className="detailLogo"
-            src={logoUrl}
-            alt={`Logo de ${player.academy?.name ?? "la academia"}`}
+            src={photoUrl}
+            alt={`Foto de ${fullName}`}
+            onError={() => setImageFailed(true)}
           />
         ) : (
           <span className="detailLogoFallback" aria-hidden="true">
@@ -64,7 +69,7 @@ export function ProspectPlayerSummaryCard({
         <div>
           <p className="detailCode">Jugador</p>
           <h2 className="detailTitle" id="prospect-player-summary">
-            {prospectPlayerName(player)}
+            {fullName}
           </h2>
           <p className="detailMeta">
             {formatProspectAge(player.age)} · {positionLabel(player.position)} ·{" "}
