@@ -80,9 +80,10 @@ export function ProspectPlayerSummaryCard({
         </div>
       </div>
       <p className="footnote">
-        Resumen deportivo sin fecha de nacimiento, residencia, tutor ni datos
-        personales de la cuenta. La verificación de la academia no impide la
-        prospección si está operativamente activa.
+        Resumen deportivo sin fecha de nacimiento, residencia ni datos personales
+        de la cuenta. Los datos del tutor se muestran en la tarjeta «Datos del
+        tutor» cuando el jugador es menor de edad. La verificación de la academia
+        no impide la prospección si está operativamente activa.
       </p>
     </section>
   );

@@ -27,6 +27,7 @@ import {
 import { PROSPECTS_PATH } from "../routes";
 import { ProspectAccessRestricted } from "./prospect-access-restricted";
 import { ProspectEvaluationList } from "./prospect-evaluation-list";
+import { ProspectGuardianCard } from "./prospect-guardian-card";
 import { ProspectPlayerSummaryCard } from "./prospect-player-summary-card";
 import { ProspectRecommendationList } from "@/features/recomendaciones/components/prospect-recommendation-list";
 
@@ -298,6 +299,11 @@ export function ProspectDetailScreen() {
       ) : (
         <>
           <ProspectPlayerSummaryCard player={prospect.player} />
+
+          <ProspectGuardianCard
+            playerId={prospect.player.id}
+            playerAge={prospect.player.age}
+          />
 
           <section className="card sectionSpacer" aria-labelledby="prospect-status">
             <div className="tableHeader">
